@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-color: #030303;
+  --text-color: #EDEDED;
+  --accent-cyan: #4DF2FF;
+  --accent-blue: #1C88FF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow-x: clip;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Atmospheric subtle background gradient behind core */
+.bg-atmospheric {
+  background: radial-gradient(circle at 50% 50%, rgba(28, 136, 255, 0.045) 0%, rgba(77, 242, 255, 0.02) 25%, rgba(3, 3, 3, 1) 75%);
+}
+
+/* Subtle scanlines/grid texture */
+.bg-digital-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 0px;
+}
+::-webkit-scrollbar-track {
+  background: #030303;
+}
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4DF2FF;
+}
+
+/* Modal internal clean scroll without horizontal overflow */
+.modal-scroll-clean {
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+.modal-scroll-clean::-webkit-scrollbar {
+  width: 4px;
+  height: 0px;
+}
+.modal-scroll-clean::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scroll-clean::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+.modal-scroll-clean::-webkit-scrollbar-thumb:hover {
+  background: #4DF2FF;
+}
+
+
+/* Clean text selection */
+::selection {
+  background: rgba(77, 242, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* Keyframe Animations */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Audio Visualizer Equalizer Animations */
+@keyframes eqBar1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+@keyframes eqBar2 {
+  0%, 100% { height: 11px; }
+  50% { height: 3px; }
+}
+
+@keyframes eqBar3 {
+  0%, 100% { height: 5px; }
+  50% { height: 18px; }
+}
+
+@keyframes eqBar4 {
+  0%, 100% { height: 14px; }
+  50% { height: 4px; }
+}
+
+.animate-eq-1 {
+  animation: eqBar1 0.85s ease-in-out infinite;
+}
+.animate-eq-2 {
+  animation: eqBar2 0.65s ease-in-out infinite 0.12s;
+}
+.animate-eq-3 {
+  animation: eqBar3 0.75s ease-in-out infinite 0.28s;
+}
+.animate-eq-4 {
+  animation: eqBar4 0.92s ease-in-out infinite 0.18s;
+}
+
+/* Cinematic Route Page Entrance Animation */
+.page-transition-enter {
+  animation: pageFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

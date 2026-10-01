@@ -53,7 +53,19 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
   const [viewMode, setViewMode] = useState<"DECK" | "GRID">("DECK");
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState("ALL");
+  const [isMobile, setIsMobile] = useState(false);
   const wheelLockRef = useRef(false);
+  const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const total = projects.length;
   const current = projects[activeIndex] || projects[0];
@@ -67,6 +79,31 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
     playSelectSound();
     setActiveIndex((prev) => (prev - 1 + total) % total);
   }, [playSelectSound, total]);
+
+  // Touch swipe support for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null || touchStartX.current === null) return;
+    const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+
+    // Detect swipe (vertical or horizontal)
+    if (Math.abs(deltaY) > 40 || Math.abs(deltaX) > 40) {
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        if (deltaY > 0) handleNext();
+        else handlePrev();
+      } else {
+        if (deltaX > 0) handleNext();
+        else handlePrev();
+      }
+    }
+    touchStartY.current = null;
+    touchStartX.current = null;
+  };
 
   // Keyboard navigation when in Deck mode
   useEffect(() => {
@@ -119,9 +156,11 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
     // Previous card: Folded forward on bottom plane (Floor reflection)
     if (diff === -1 || (activeIndex === 0 && index === total - 1)) {
       return {
-        transform: "perspective(1400px) rotateX(76deg) translateY(180px) translateZ(-40px) scale(0.96)",
+        transform: isMobile
+          ? "perspective(1200px) rotateX(72deg) translateY(220px) translateZ(-40px) scale(0.92)"
+          : "perspective(1400px) rotateX(76deg) translateY(180px) translateZ(-40px) scale(0.96)",
         transformOrigin: "top center",
-        opacity: 0.65,
+        opacity: isMobile ? 0.35 : 0.65,
         zIndex: 5,
         filter: "brightness(0.65) blur(0.5px)",
         pointerEvents: "auto" as const,
@@ -132,7 +171,9 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
     // Active Center Card
     if (diff === 0) {
       return {
-        transform: "perspective(1400px) rotateX(8deg) translateY(0px) translateZ(50px) scale(1)",
+        transform: isMobile
+          ? "perspective(1200px) rotateX(3deg) translateY(0px) translateZ(30px) scale(1)"
+          : "perspective(1400px) rotateX(8deg) translateY(0px) translateZ(50px) scale(1)",
         transformOrigin: "center center",
         opacity: 1,
         zIndex: 40,
@@ -144,13 +185,13 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
 
     // Stacked Cards behind (peeking tabs)
     if (diff > 0 && diff <= 5) {
-      const ty = -diff * 32;
-      const tz = -diff * 75;
-      const rot = 7 + diff * 2.2;
-      const scale = 1 - diff * 0.032;
+      const ty = isMobile ? -diff * 18 : -diff * 32;
+      const tz = isMobile ? -diff * 45 : -diff * 75;
+      const rot = isMobile ? 3 + diff * 1.5 : 7 + diff * 2.2;
+      const scale = isMobile ? 1 - diff * 0.035 : 1 - diff * 0.032;
       const opacity = Math.max(0.35, 1 - diff * 0.14);
       return {
-        transform: `perspective(1600px) rotateX(${rot}deg) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`,
+        transform: `perspective(${isMobile ? "1200px" : "1600px"}) rotateX(${rot}deg) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`,
         transformOrigin: "bottom center",
         opacity,
         zIndex: 30 - diff,
@@ -162,7 +203,9 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
 
     // Far inactive cards
     return {
-      transform: "perspective(1600px) rotateX(25deg) translateY(-260px) translateZ(-600px) scale(0.8)",
+      transform: isMobile
+        ? "perspective(1200px) rotateX(20deg) translateY(-200px) translateZ(-400px) scale(0.8)"
+        : "perspective(1600px) rotateX(25deg) translateY(-260px) translateZ(-600px) scale(0.8)",
       transformOrigin: "bottom center",
       opacity: 0,
       zIndex: 0,
@@ -267,24 +310,29 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
       {viewMode === "DECK" ? (
         <div 
           onWheel={handleWheel}
-          className="relative w-full min-h-[760px] sm:min-h-[840px] lg:min-h-[920px] flex flex-col justify-between items-center py-6 select-none overflow-hidden transition-all duration-500"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="relative w-full min-h-[690px] sm:min-h-[840px] lg:min-h-[920px] flex flex-col justify-between items-center py-4 sm:py-6 select-none overflow-hidden transition-all duration-500"
           style={{ perspective: "1500px" }}
         >
           {/* Subtle Ambient Radial Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[550px] bg-coreCyan/10 blur-[180px] pointer-events-none rounded-full transition-all duration-700" />
 
           {/* Top Instruction Pill */}
-          <div className="relative z-30 flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-black/70 border border-white/15 backdrop-blur-md font-mono text-[11px] text-zinc-300 shadow-xl">
-            <span className="w-1.5 h-1.5 rounded-full bg-coreCyan animate-ping" />
-            <span className="tracking-wide">
+          <div className="relative z-30 flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/70 border border-white/15 backdrop-blur-md font-mono text-[10px] sm:text-[11px] text-zinc-300 shadow-xl max-w-[94%]">
+            <span className="w-1.5 h-1.5 rounded-full bg-coreCyan animate-ping shrink-0" />
+            <span className="tracking-wide hidden sm:inline">
               SCROLL / CLICK TABS TO FLIP THROUGH THE 3D DECK
             </span>
+            <span className="tracking-wide sm:hidden inline">
+              SWIPE / CLICK TABS TO FLIP 3D DECK
+            </span>
             <span className="text-zinc-500">•</span>
-            <span className="text-coreCyan font-semibold">{activeIndex + 1} of {total}</span>
+            <span className="text-coreCyan font-semibold shrink-0">{activeIndex + 1} of {total}</span>
           </div>
 
           {/* 3D Stacked Stage */}
-          <div className="relative w-full max-w-5xl xl:max-w-6xl h-[480px] sm:h-[560px] lg:h-[640px] my-auto flex items-center justify-center transition-all duration-500">
+          <div className="relative w-full max-w-5xl xl:max-w-6xl h-[530px] sm:h-[560px] lg:h-[640px] my-auto flex items-center justify-center transition-all duration-500">
             {projects.map((item, idx) => {
               const cardStyle = getCardTransform(idx);
               const isActive = idx === activeIndex;
@@ -300,37 +348,38 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                       setActiveIndex(idx);
                     }
                   }}
-                  className={`absolute w-[94%] sm:w-[90%] lg:w-[960px] xl:w-[1080px] aspect-[16/10] rounded-2xl sm:rounded-3xl overflow-hidden border bg-[#0d0d15] shadow-[0_30px_90px_rgba(0,0,0,0.95)] flex flex-col cursor-pointer transition-all duration-500 ${
+                  className={`absolute w-[94%] sm:w-[90%] lg:w-[960px] xl:w-[1080px] h-[500px] sm:h-auto sm:aspect-[16/10] rounded-2xl sm:rounded-3xl overflow-hidden border bg-[#0d0d15] shadow-[0_30px_90px_rgba(0,0,0,0.95)] flex flex-col cursor-pointer transition-all duration-500 ${
                     isActive
                       ? "border-coreCyan/80 shadow-[0_35px_100px_rgba(77,242,255,0.3)] ring-1 ring-coreCyan/40"
                       : "border-white/20 hover:border-white/50"
                   }`}
                 >
                   {/* Peeking Tab Header Bar (Always visible in 3D stack) */}
-                  <div className="w-full px-4 sm:px-7 py-3 bg-[#141520] border-b border-white/10 flex items-center justify-between shrink-0 z-20">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-                      <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
-                      <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
-                      <span className="ml-2 font-mono text-[11px] sm:text-xs font-semibold text-white tracking-widest uppercase">
+                  <div className="w-full px-3.5 sm:px-7 py-2.5 sm:py-3 bg-[#141520] border-b border-white/10 flex items-center justify-between shrink-0 z-20">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-red-500/80 inline-block shrink-0" />
+                      <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-yellow-500/80 inline-block shrink-0" />
+                      <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-green-500/80 inline-block shrink-0" />
+                      <span className="ml-1 sm:ml-2 font-mono text-[10px] sm:text-xs font-semibold text-white tracking-wider sm:tracking-widest uppercase truncate">
                         {item.tag} // {item.client}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-2.5">
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                       {item.isThesisCapstone && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-yellow-400/60 font-mono text-[9px] sm:text-[10px] text-yellow-300 flex items-center gap-1 font-bold shadow-[0_0_12px_rgba(250,204,21,0.35)]">
+                        <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-yellow-400/60 font-mono text-[9px] sm:text-[10px] text-yellow-300 flex items-center gap-1 font-bold shadow-[0_0_12px_rgba(250,204,21,0.35)]">
                           <span>🎓</span>
-                          <span>THESIS CAPSTONE</span>
+                          <span className="hidden xs:inline">THESIS CAPSTONE</span>
+                          <span className="xs:hidden">THESIS</span>
                         </span>
                       )}
                       {(item.videoUrl || item.driveId) && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-coreCyan/20 border border-coreCyan/50 font-mono text-[9px] sm:text-[10px] text-coreCyan flex items-center gap-1 font-medium">
-                          <Video className="w-3 h-3" />
+                        <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-coreCyan/20 border border-coreCyan/50 font-mono text-[9px] sm:text-[10px] text-coreCyan flex items-center gap-1 font-medium">
+                          <Video className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                           {item.driveId ? "HD DEMO" : "VIDEO DEMO"}
                         </span>
                       )}
-                      <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 truncate max-w-[200px] hidden sm:inline">
+                      <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 truncate max-w-[140px] sm:max-w-[200px] hidden md:inline">
                         {item.liveUrl && !item.liveUrl.includes("drive.google.com") ? item.liveUrl.replace(/^https?:\/\//, '') : `${item.id}.sys`}
                       </span>
                     </div>
@@ -387,41 +436,41 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                     )}
 
                     {/* Gradient Overlay for bottom text */}
-                    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-64 sm:h-48 bg-gradient-to-t from-black/95 via-black/70 to-transparent pointer-events-none" />
 
                     {/* Active Project Overlay Banner (Theater Sized) */}
-                    <div className="absolute bottom-5 sm:bottom-7 left-6 sm:left-9 right-6 sm:right-9 z-20 flex flex-col md:flex-row md:items-end justify-between gap-4 text-left pointer-events-none">
-                      <div className="space-y-1.5 max-w-xl lg:max-w-2xl">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono text-[11px] sm:text-xs text-coreCyan uppercase tracking-widest font-semibold flex items-center gap-2">
+                    <div className="absolute bottom-4 sm:bottom-7 left-4 sm:left-9 right-4 sm:right-9 z-20 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 text-left pointer-events-none">
+                      <div className="space-y-1 sm:space-y-1.5 max-w-xl lg:max-w-2xl">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <span className="font-mono text-[10px] sm:text-xs text-coreCyan uppercase tracking-widest font-semibold flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-coreCyan" />
                             {item.category}
                           </span>
                           {item.isThesisCapstone && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-yellow-400/60 font-mono text-[10px] text-yellow-300 font-bold flex items-center gap-1 shadow-[0_0_15px_rgba(250,204,21,0.4)]">
+                            <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-yellow-400/60 font-mono text-[9px] sm:text-[10px] text-yellow-300 font-bold flex items-center gap-1 shadow-[0_0_15px_rgba(250,204,21,0.4)]">
                               <span>🎓</span>
                               <span>COLLEGE THESIS CAPSTONE</span>
                             </span>
                           )}
                         </div>
-                        <h3 className="font-grotesk font-bold text-2xl sm:text-3xl lg:text-4xl text-white uppercase tracking-tight line-clamp-1 drop-shadow-lg">
+                        <h3 className="font-grotesk font-bold text-xl sm:text-3xl lg:text-4xl text-white uppercase tracking-tight line-clamp-1 drop-shadow-lg">
                           {item.title}
                         </h3>
-                        <p className="text-zinc-300 text-xs sm:text-sm font-sans line-clamp-2 drop-shadow-md max-w-xl">
+                        <p className="text-zinc-300 text-xs sm:text-sm font-sans line-clamp-2 drop-shadow-md max-w-xl leading-relaxed">
                           {item.shortDesc}
                         </p>
                       </div>
 
                       {/* Interactive Buttons (Clickable) */}
                       {isActive && (
-                        <div className="flex items-center gap-3 pointer-events-auto shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 pointer-events-auto shrink-0 pt-1 sm:pt-0 w-full sm:w-auto">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               onOpenProject(item);
                             }}
-                            className="px-5 py-2.5 rounded-full bg-coreCyan text-black hover:bg-white font-mono text-xs sm:text-sm font-semibold tracking-wider transition-all flex items-center gap-2 shadow-[0_0_25px_rgba(77,242,255,0.45)] cursor-pointer hover:scale-105 active:scale-95"
+                            className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-coreCyan text-black hover:bg-white font-mono text-xs sm:text-sm font-semibold tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(77,242,255,0.45)] cursor-pointer hover:scale-105 active:scale-95"
                           >
                             <span>{item.driveId || item.videoUrl ? "WATCH DEMO & SPECS" : "INSPECT SPECS"}</span>
                             <ArrowUpRight className="w-4 h-4" />
@@ -433,7 +482,7 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="px-5 py-2.5 rounded-full bg-black/85 hover:bg-white text-white hover:text-black border border-white/30 font-mono text-xs sm:text-sm tracking-wider transition-all flex items-center gap-2 backdrop-blur-md shadow-xl hover:scale-105 active:scale-95"
+                              className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-black/85 hover:bg-white text-white hover:text-black border border-white/30 font-mono text-xs sm:text-sm tracking-wider transition-all flex items-center justify-center gap-2 backdrop-blur-md shadow-xl hover:scale-105 active:scale-95"
                             >
                               <span>LAUNCH SITE</span>
                               <ExternalLink className="w-4 h-4" />
@@ -449,24 +498,24 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
           </div>
 
           {/* Bottom Deck Controls (Prev / Next & Counter) */}
-          <div className="relative z-30 flex flex-col sm:flex-row items-center justify-between w-full max-w-5xl px-4 pt-6 border-t border-white/10 shrink-0 gap-4 transition-all duration-500">
+          <div className="relative z-30 flex flex-row items-center justify-between w-full max-w-5xl px-2 sm:px-4 pt-4 sm:pt-6 border-t border-white/10 shrink-0 gap-2 sm:gap-4 transition-all duration-500">
             {/* Prev Button */}
             <button
               type="button"
               onClick={handlePrev}
               onMouseEnter={() => playHoverSound()}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/30 hover:border-coreCyan bg-zinc-900/90 hover:bg-coreCyan hover:text-black text-white font-mono text-xs tracking-widest uppercase transition-all backdrop-blur-md cursor-pointer shadow-xl group"
+              className="flex items-center gap-1 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-full border border-white/30 hover:border-coreCyan bg-zinc-900/90 hover:bg-coreCyan hover:text-black text-white font-mono text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase transition-all backdrop-blur-md cursor-pointer shadow-xl group"
             >
-              <ChevronUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-              <span>PREVIOUS</span>
+              <ChevronUp className="w-3.5 sm:w-4 h-3.5 sm:h-4 group-hover:-translate-y-0.5 transition-transform" />
+              <span>PREV</span>
             </button>
 
             {/* Stepper Dots & Numbers */}
-            <div className="flex items-center gap-4">
-              <span className="font-mono text-base font-bold text-white tracking-widest">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="font-mono text-xs sm:text-base font-bold text-white tracking-widest">
                 {String(activeIndex + 1).padStart(2, "0")}
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 max-w-[120px] sm:max-w-none overflow-hidden">
                 {projects.map((_, i) => (
                   <button
                     key={`dot-${i}`}
@@ -474,15 +523,15 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                       playSelectSound();
                       setActiveIndex(i);
                     }}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    className={`h-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
                       i === activeIndex
-                        ? "w-7 bg-coreCyan shadow-[0_0_10px_#4df2ff]"
+                        ? "w-5 sm:w-7 bg-coreCyan shadow-[0_0_10px_#4df2ff]"
                         : "w-1.5 bg-white/20 hover:bg-white/50"
                     }`}
                   />
                 ))}
               </div>
-              <span className="font-mono text-xs text-zinc-500 tracking-widest">
+              <span className="font-mono text-[10px] sm:text-xs text-zinc-500 tracking-widest">
                 {String(total).padStart(2, "0")}
               </span>
             </div>
@@ -492,10 +541,10 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
               type="button"
               onClick={handleNext}
               onMouseEnter={() => playHoverSound()}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/30 hover:border-coreCyan bg-zinc-900/90 hover:bg-coreCyan hover:text-black text-white font-mono text-xs tracking-widest uppercase transition-all backdrop-blur-md cursor-pointer shadow-xl group"
+              className="flex items-center gap-1 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-full border border-white/30 hover:border-coreCyan bg-zinc-900/90 hover:bg-coreCyan hover:text-black text-white font-mono text-[10px] sm:text-xs tracking-wider sm:tracking-widest uppercase transition-all backdrop-blur-md cursor-pointer shadow-xl group"
             >
               <span>NEXT</span>
-              <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              <ChevronDown className="w-3.5 sm:w-4 h-3.5 sm:h-4 group-hover:translate-y-0.5 transition-transform" />
             </button>
           </div>
         </div>

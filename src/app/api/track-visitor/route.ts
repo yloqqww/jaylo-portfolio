@@ -18,6 +18,17 @@ export async function POST(req: NextRequest) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "Unknown IP";
     const userAgent = req.headers.get("user-agent") || "Unknown UA";
 
+    // Filter out bots, crawlers, and serverless preview runners
+    const isBot = /bot|crawl|spider|slurp|lighthouse|headless|preview|vercel|puppeteer|selenium|playwright/i.test(userAgent);
+    if (isBot) {
+      return NextResponse.json({ ok: true, note: "Bot ignored" });
+    }
+
+    // Ignore headless 800x600 test runner on Linux
+    if (screen === "800x600" && /linux/i.test(userAgent)) {
+      return NextResponse.json({ ok: true, note: "Headless preview ignored" });
+    }
+
     // Format location string
     const locationString = city !== "Unknown City" 
       ? `${decodeURIComponent(city)}, ${region ? decodeURIComponent(region) + ", " : ""}${country}` 

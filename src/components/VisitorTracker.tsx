@@ -10,6 +10,14 @@ export const VisitorTracker = () => {
     // Only track in production browser environment
     if (typeof window === "undefined") return;
 
+    // Filter out automated bots, crawlers, and headless testing tools
+    if (
+      (typeof navigator !== "undefined" && navigator.webdriver) ||
+      /bot|crawl|spider|slurp|lighthouse|headless|preview|facebookexternalhit|whatsapp|discordbot/i.test(navigator.userAgent || "")
+    ) {
+      return;
+    }
+
     // Prevent spamming Discord within the same session
     const sessionKey = "jl_session_telemetry_sent";
     const alreadySent = sessionStorage.getItem(sessionKey);

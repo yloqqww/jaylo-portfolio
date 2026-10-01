@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Security: In-memory Rate Limiting Map (IP -> Timestamp)
+// Protects against bot flooding and notification spam attacks
+const rateLimitMap = new Map<string, number>();
+const RATE_LIMIT_WINDOW_MS = 30 * 60 * 1000; // 30-minute cooldown per IP
+
 export async function POST(req: NextRequest) {
   try {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
@@ -8,15 +13,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, note: "Webhook not configured" });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const { path = "/", referrer = "Direct Visit", screen = "Unknown" } = body;
-
-    // Extract Vercel Geolocation & Headers
-    const country = req.headers.get("x-vercel-ip-country") || "Local / Unknown";
-    const city = req.headers.get("x-vercel-ip-city") || "Unknown City";
-    const region = req.headers.get("x-vercel-ip-country-region") || "";
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "Unknown IP";
-    const userAgent = req.headers.get("user-agent") || "Unknown UA";
+
+    // 1. Rate Limit Shield: Max 1 notification per IP address every 30 minutes
+    const now = Date.now();
+    const lastRequestTime = rateLimitMap.get(ip);
+    if (lastRequestTime && now - lastRequestTime < RATE_LIMIT_WINDOW_MS) {
+      return NextResponse.json({ ok: true, note: "Rate limited (cooldown active)" });
+    }
+    rateLimitMap.set(ip, now);
+
+    // Periodic cleanup of rate limit map to prevent memory leak
+    if (rateLimitMap.size > 2000) {
+      for (const [key, timestamp] of rateLimitMap.entries()) {
+        if (now - timestamp > RATE_LIMIT_WINDOW_MS) {
+          rateLimitMap.delete(key);
+        }
+      }
+    }
+
+    const body = await req.json().catch(() => ({}));
+    let { path = "/", referrer = "Direct Visit", screen = "Unknown" } = body;
+
+    // 2. Sanitization Shield: truncate strings to prevent Discord webhook payload injection
+    path = String(path).replace(/[<>\\]/g, "").slice(0, 100) || "/";
+    referrer = String(referrer).replace(/[<>\\]/g, "").slice(0, 120) || "Direct Visit";
+    screen = String(screen).replace(/[^0-9x]/g, "").slice(0, 20) || "Unknown";
+
+    const userAgent = (req.headers.get("user-agent") || "Unknown UA").slice(0, 300);
 
     // Filter out bots, crawlers, and serverless preview runners
     const isBot = /bot|crawl|spider|slurp|lighthouse|headless|preview|vercel|puppeteer|selenium|playwright/i.test(userAgent);
@@ -28,6 +52,11 @@ export async function POST(req: NextRequest) {
     if (screen === "800x600" && /linux/i.test(userAgent)) {
       return NextResponse.json({ ok: true, note: "Headless preview ignored" });
     }
+
+    // Extract Vercel Geolocation & Headers
+    const country = req.headers.get("x-vercel-ip-country") || "Local / Unknown";
+    const city = req.headers.get("x-vercel-ip-city") || "Unknown City";
+    const region = req.headers.get("x-vercel-ip-country-region") || "";
 
     // Format location string
     const locationString = city !== "Unknown City" 

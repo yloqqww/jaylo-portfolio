@@ -36,6 +36,6 @@ next-env.d.ts
 # large video files exceeding GitHub 100MB limit
 public/affilio-commerce.mp4
 public/ccs-video.mp4
-public/propmaint.mp4
 public/propmaint.mov
+
 

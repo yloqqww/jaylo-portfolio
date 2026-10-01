@@ -51,6 +51,7 @@ interface ProjectCaseStudy {
   id: string;
   tag: string;
   category: string;
+  isThesisCapstone?: boolean;
   title: string;
   tagline: string;
   client: string;
@@ -60,6 +61,7 @@ interface ProjectCaseStudy {
   imageSrc: string;
   videoUrl?: string;
   videoDriveUrl?: string;
+  driveId?: string;
   tech: string[];
   architecture: {
     backend: string;
@@ -88,7 +90,7 @@ const PERSONAL_PROJECTS: ProjectCaseStudy[] = [
     shortDesc: "Comprehensive e-commerce and affiliate growth platform featuring multi-tier commission attribution, high-converting product showcases, checkout funnels, and creator commission dashboards.",
     fullDesc: "Comprehensive e-commerce and affiliate growth platform featuring multi-tier commission attribution, high-converting product showcases, checkout funnels, and creator commission dashboards. Includes live recorded walkthroughs of the end-to-end checkout and attribution flows.",
     imageSrc: "/affilio-commerce.png",
-    videoUrl: "/affilio-commerce.mp4",
+    driveId: "1ckz4spH9c48x8Lv_0wHXEbaUwLPIY3Gp",
     videoDriveUrl: "https://drive.google.com/file/d/1ckz4spH9c48x8Lv_0wHXEbaUwLPIY3Gp/view?usp=sharing",
     tech: ["React", "Next.js", "Tailwind CSS", "Stripe API", "Node.js", "PostgreSQL"],
     architecture: {
@@ -99,11 +101,10 @@ const PERSONAL_PROJECTS: ProjectCaseStudy[] = [
       futureReadiness: "Prepared for automated crypto payout bridges and multi-channel TikTok Shop & Instagram Shop API synchronization.",
     },
     stackText: "React, Next.js, Tailwind CSS, Stripe API, Node.js, PostgreSQL.",
-    mediaText: "Recorded system walkthrough demonstrating customer checkout and real-time affiliate ledger attribution.",
+    mediaText: "Direct embedded high-definition screen record walkthrough demonstrating customer checkout and real-time affiliate ledger attribution without leaving the application.",
     outcomeText: "Streamlined end-to-end purchasing workflows, established automated commission calculation for creators, and provided merchants with unified conversion analytics.",
-    liveUrl: "https://drive.google.com/file/d/1ckz4spH9c48x8Lv_0wHXEbaUwLPIY3Gp/view?usp=sharing",
     githubUrl: "https://github.com/jayloludovice",
-    statusText: "LIVE VIDEO DEMO",
+    statusText: "SCREEN RECORD DEMO",
   },
   {
     id: "jlr-consultancy",
@@ -283,24 +284,25 @@ const PERSONAL_PROJECTS: ProjectCaseStudy[] = [
       futureReadiness: "Prepared for automated scheduled maintenance sensors (IoT boiler and damp monitors) and municipal housing authority data lakes.",
     },
     stackText: "React, Node.js, PostgreSQL, React Native, Prisma, Express, Xero API, Tailwind CSS.",
-    mediaText: "Interactive demonstration repository and prototype assets at Google Drive showcase.",
+    mediaText: "Executive production video demonstration showcasing full property maintenance workflow, dispatch dashboard, and contractor mobile app.",
     outcomeText: "Significantly accelerated work order approval workflows, eliminated invoice reconciliation errors through automated Xero syncing, and established complete photographic audit trails for public housing compliance.",
-    liveUrl: "https://drive.google.com/file/d/1mvLdx68_J-HIDKBeKZgI9VyKmbkFEEmQ/view?usp=sharing",
     githubUrl: "https://github.com/jayloludovice",
-    statusText: "LIVE VIDEO DEMO",
+    statusText: "EXECUTIVE VIDEO DEMO",
   },
   {
     id: "ccs",
-    tag: "SYS-09",
-    category: "FULL STACK",
+    tag: "SYS-09 • BSIT THESIS CAPSTONE",
+    category: "COLLEGE THESIS & CAPSTONE",
+    isThesisCapstone: true,
     title: "CCS Student Services Academic Portal (LSPU)",
-    tagline: "ACADEMIC SERVICES MANAGEMENT SYSTEM FOR LSPU-STA. CRUZ WITH 6 USER ROLES",
-    client: "LAGUNA STATE POLYTECHNIC UNIVERSITY",
-    role: "Full-Stack Developer / System Developer. Responsible for end-to-end database design and implementation, backend API development in PHP, frontend UI/UX implementation, system integration and deployment, as well as ongoing maintenance and optimization.",
-    shortDesc: "A full-stack student services management system for LSPU-Sta. Cruz with role-based access for 6 user types, grade encoding, crediting workflows, OJT management, and PDF document generation.",
-    fullDesc: "A full-stack student services management system for LSPU-Sta. Cruz with role-based access for 6 user types, grade encoding, crediting workflows, OJT management, and PDF document generation.",
+    tagline: "OFFICIAL UNDERGRADUATE THESIS & CAPSTONE PROJECT • ACADEMIC SERVICES SYSTEM FOR LSPU-STA. CRUZ",
+    client: "LAGUNA STATE POLYTECHNIC UNIVERSITY (LSPU)",
+    role: "Lead Full-Stack Developer & Thesis Lead. Spearheaded the complete database architecture (27 tables), secure PHP backend, role-based access control for 6 user types, UI/UX implementation, thesis documentation, faculty panel defense, and deployment.",
+    shortDesc: "Official BSIT Undergraduate Thesis & Capstone Project: A centralized academic services portal for LSPU-Sta. Cruz featuring 6 user roles, grade encoding, crediting workflows, OJT management, and dynamic PDF generation.",
+    fullDesc: "Official BSIT Undergraduate Thesis & Capstone Project: A centralized academic services portal for LSPU-Sta. Cruz featuring 6 user roles, grade encoding, crediting workflows, OJT management, and dynamic PDF generation. Defended and approved with distinction by the LSPU College of Computer Studies faculty panel.",
     imageSrc: "/ccs.png",
-    videoUrl: "/ccs-video.mp4",
+    driveId: "1iHXPoCNNLzG37KBjfRfYNfA3n08tai01",
+    videoDriveUrl: "https://drive.google.com/file/d/1iHXPoCNNLzG37KBjfRfYNfA3n08tai01/view?usp=sharing",
     tech: ["PHP", "MySQL", "JavaScript", "PHPMailer", "FPDF", "Chart.js"],
     architecture: {
       backend: "Application Layer built on PHP 8.0 and Apache handling session management, core business logic, automated email notifications via PHPMailer, and dynamic credential generation via FPDF.",
@@ -310,11 +312,11 @@ const PERSONAL_PROJECTS: ProjectCaseStudy[] = [
       futureReadiness: "Designed for seamless migration to cloud hosting and bi-directional synchronization with campus-wide registrar systems.",
     },
     stackText: "PHP, MySQL, JavaScript, PHPMailer, FPDF, Chart.js, HTML, CSS, Apache, XAMPP.",
-    mediaText: "Official digital signatures, dynamic PDF credential documents, and high-definition video walkthrough.",
-    outcomeText: "For Students: 24/7 access to grades and academic services, faster processing of INC and crediting requests, transparency in academic standing, and instant email alerts. For Teachers: Centralized grade management, easy INC request tracking, digital signature integration, and class management tools. For Administrators: Real-time monitoring of student progress, automated approval workflows, data-driven decision making, and reduced paperwork.",
+    mediaText: "Official undergraduate thesis capstone walkthrough video showing 6 user roles, student grade portal, Dean and Program Head approval workflows, and dynamic PDF credential generation.",
+    outcomeText: "Official College Thesis & Capstone Project defended and approved at LSPU. For Students: 24/7 access to grades and academic services, faster processing of INC and crediting requests, transparency in academic standing, and instant email alerts. For Teachers: Centralized grade management, easy INC request tracking, digital signature integration, and class management tools. For Administrators: Real-time monitoring of student progress, automated approval workflows, data-driven decision making, and reduced paperwork.",
     liveUrl: "https://ccsstudentservices.online/login",
     githubUrl: "https://github.com/jayloludovice",
-    statusText: "LIVE ACADEMIC SYSTEM",
+    statusText: "OFFICIAL THESIS CAPSTONE",
   },
   {
     id: "mobile-app",
@@ -557,8 +559,8 @@ export default function WorkPage() {
   // Filtered Personal Projects (Linear / Vercel style grid)
   const filteredPersonalProjects = PERSONAL_PROJECTS.filter((p) => {
     if (archiveFilter === "ALL") return true;
-    if (archiveFilter === "VIDEO") return Boolean(p.videoUrl);
-    if (archiveFilter === "LIVE") return Boolean(p.liveUrl);
+    if (archiveFilter === "VIDEO") return Boolean(p.videoUrl || p.driveId);
+    if (archiveFilter === "LIVE") return Boolean(p.liveUrl && !p.liveUrl.includes("drive.google.com"));
     if (archiveFilter === "SAAS") return p.category.includes("SAAS");
     if (archiveFilter === "CIVIC") return p.category.includes("COMMUNITY") || p.category.includes("GOVERNANCE");
     return true;
@@ -1004,12 +1006,24 @@ export default function WorkPage() {
             
             {/* Project Title Watermark Banner */}
             <div className="text-center space-y-3 sm:space-y-4">
-              <div className="font-mono text-xs sm:text-sm tracking-[0.28em] sm:tracking-[0.38em] text-coreCyan uppercase font-medium">
-                {activeProject.category}
+              <div className="flex items-center justify-center gap-2.5 flex-wrap font-mono text-xs sm:text-sm tracking-[0.28em] text-coreCyan uppercase font-medium">
+                <span>{activeProject.category}</span>
+                {activeProject.isThesisCapstone && (
+                  <>
+                    <span className="text-zinc-600">•</span>
+                    <span className="px-3.5 py-1 rounded-full bg-amber-500/20 border border-yellow-400/60 text-yellow-300 font-bold tracking-widest text-[11px] sm:text-xs flex items-center gap-1.5 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
+                      <span>🎓</span>
+                      <span>OFFICIAL UNDERGRADUATE THESIS & CAPSTONE (LSPU)</span>
+                    </span>
+                  </>
+                )}
               </div>
               <h1 className="font-grotesk font-light text-3xl sm:text-5xl md:text-7xl tracking-wide sm:tracking-wider text-white uppercase leading-tight">
                 {activeProject.title}
               </h1>
+              <p className="font-mono text-xs sm:text-sm text-coreCyan/80 tracking-wider max-w-3xl mx-auto uppercase">
+                {activeProject.tagline}
+              </p>
             </div>
 
             {/* Showcase Media Preview Frame with Simulated Browser Chrome & Theater Mode */}
@@ -1031,35 +1045,47 @@ export default function WorkPage() {
                     <span className="w-3 h-3 rounded-full bg-green-500/80"></span>
                   </div>
                   <div className="font-mono text-xs sm:text-sm text-white/70 tracking-wider truncate max-w-sm sm:max-w-md px-4 py-1.5 rounded bg-black/50 border border-white/10">
-                    {activeProject.liveUrl || "http://localhost:3000"}
+                    {activeProject.liveUrl && !activeProject.liveUrl.includes("drive.google.com")
+                      ? activeProject.liveUrl
+                      : (activeProject.driveId ? "IN-APP HD VIDEO WALKTHROUGH PLAYER" : "http://localhost:3000")}
                   </div>
                   
                   {/* Chrome Right Action: Quick Theater Switch */}
-                  {activeProject.videoUrl && (
+                  {(activeProject.videoUrl || activeProject.driveId) && (
                     <button
                       type="button"
                       onClick={() => {
                         playSelectSound();
                         setIsTheaterMode(!isTheaterMode);
                       }}
-                      className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] tracking-wider text-muted hover:text-coreCyan transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 font-mono text-[11px] sm:text-xs tracking-wider px-3 py-1 rounded bg-white/[0.06] hover:bg-coreCyan hover:text-black border border-white/20 hover:border-coreCyan text-coreCyan transition-all cursor-pointer shadow-md"
                     >
                       <Tv className="w-3.5 h-3.5" />
-                      <span>{isTheaterMode ? "EXIT THEATER" : "THEATER VIEW"}</span>
+                      <span>{isTheaterMode ? "DEFAULT VIEW" : "THEATER VIEW"}</span>
                     </button>
                   )}
-                  {!activeProject.videoUrl && <div className="w-8"></div>}
+                  {!activeProject.videoUrl && !activeProject.driveId && <div className="w-8"></div>}
                 </div>
 
-                {/* Media Container (Video or Screenshot) */}
+                {/* Media Container (Drive Video Iframe, Local Video, or Screenshot) */}
                 <div
                   className={`relative w-full bg-black flex items-center justify-center overflow-hidden transition-all duration-500 ${
                     isTheaterMode
-                      ? "aspect-[16/9] min-h-[50vh] sm:min-h-[68vh] max-h-[82vh]"
+                      ? "aspect-[16/9] min-h-[50vh] sm:min-h-[72vh] max-h-[88vh]"
                       : "aspect-video min-h-[300px] sm:min-h-[480px]"
                   }`}
                 >
-                  {activeProject.videoUrl ? (
+                  {activeProject.driveId ? (
+                    <div className="relative w-full h-full bg-black flex items-center justify-center">
+                      <iframe
+                        src={`https://drive.google.com/file/d/${activeProject.driveId}/preview`}
+                        className="w-full h-full border-0"
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowFullScreen
+                        title={`${activeProject.title} Video Showcase`}
+                      />
+                    </div>
+                  ) : activeProject.videoUrl ? (
                     <video
                       ref={videoRef}
                       src={activeProject.videoUrl}
@@ -1084,8 +1110,8 @@ export default function WorkPage() {
                     />
                   )}
 
-                  {/* Video Control Bar if video is present */}
-                  {activeProject.videoUrl && (
+                  {/* Video Control Bar if local HTML5 video is present (Drive iframe has built-in controls) */}
+                  {!activeProject.driveId && activeProject.videoUrl && (
                     <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-center justify-between font-mono text-xs text-white z-20 backdrop-blur-[2px]">
                       
                       {/* Left: Play/Pause, Sound Toggle, Status */}
@@ -1297,7 +1323,7 @@ export default function WorkPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-                  {activeProject.liveUrl && (
+                  {activeProject.liveUrl && !activeProject.liveUrl.includes("drive.google.com") && (
                     <a
                       href={activeProject.liveUrl}
                       target="_blank"
@@ -1320,6 +1346,19 @@ export default function WorkPage() {
                     >
                       <span>VIEW SOURCE CODE</span>
                       <ExternalLink className="w-4 h-4 text-coreCyan" />
+                    </a>
+                  )}
+
+                  {activeProject.videoDriveUrl && (
+                    <a
+                      href={activeProject.videoDriveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => playSelectSound()}
+                      className="px-7 py-4 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/20 hover:border-white/40 font-mono text-xs sm:text-sm tracking-widest text-zinc-300 hover:text-white transition-all flex items-center gap-2.5 font-medium"
+                    >
+                      <span>OPEN IN DRIVE</span>
+                      <ExternalLink className="w-4 h-4 text-zinc-400" />
                     </a>
                   )}
 

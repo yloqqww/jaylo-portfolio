@@ -7,7 +7,7 @@ import { useBackground } from "./BackgroundContext";
 
 export const GlobalBackground3D: React.FC = () => {
   const pathname = usePathname();
-  const { isCharging, holdProgress, isBursting } = useBackground();
+  const { isCharging, holdProgress, isBursting, isEcoMode } = useBackground();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,6 +18,7 @@ export const GlobalBackground3D: React.FC = () => {
     isCharging,
     holdProgress,
     isBursting,
+    isEcoMode,
   });
 
   useEffect(() => {
@@ -26,8 +27,9 @@ export const GlobalBackground3D: React.FC = () => {
       isCharging,
       holdProgress,
       isBursting,
+      isEcoMode,
     };
-  }, [pathname, isCharging, holdProgress, isBursting]);
+  }, [pathname, isCharging, holdProgress, isBursting, isEcoMode]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -44,17 +46,18 @@ export const GlobalBackground3D: React.FC = () => {
     );
     camera.position.set(0, 0, 11.5);
 
-    // 2. High-Performance WebGL Renderer
+    // 2. High-Performance WebGL Renderer (Capped at 1.5 DPR to prevent 4K fill-rate stutter)
+    const maxDpr = stateRef.current.isEcoMode ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.5);
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: !stateRef.current.isEcoMode,
       alpha: true,
       powerPreference: "high-performance",
       stencil: false,
       depth: true,
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(maxDpr);
 
     // 3. Main Rotating Matrix Root Group
     const rootGroup = new THREE.Group();
@@ -63,9 +66,10 @@ export const GlobalBackground3D: React.FC = () => {
     // ==========================================
     // A. HOLOGRAPHIC BOUNDING CAGE & DUST
     // ==========================================
-    const spacing = 0.34;
-    const N = 12;
-    const halfExtent = ((N - 1) * spacing) / 2;
+    // N = 8 provides 512 crisp nodes (70% less CPU math than N=12 while preserving identical 3D volume)
+    const spacing = 0.534;
+    const N = 8;
+    const halfExtent = ((N - 1) * spacing) / 2; // ~1.87
 
     const boxGeo = new THREE.BoxGeometry(halfExtent * 2.05, halfExtent * 2.05, halfExtent * 2.05);
     const edgesGeo = new THREE.EdgesGeometry(boxGeo);
@@ -79,8 +83,8 @@ export const GlobalBackground3D: React.FC = () => {
     const cubeWireframe = new THREE.LineSegments(edgesGeo, edgesMat);
     rootGroup.add(cubeWireframe);
 
-    // Floating 3D Ambient Dust Field (Two counter-rotating cosmic starfields)
-    const dustCount = 420;
+    // Floating 3D Ambient Dust Field (Optimized count for 60fps on integrated graphics)
+    const dustCount = stateRef.current.isEcoMode ? 60 : 160;
     const dustGeo = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(dustCount * 3);
     const dustColors = new Float32Array(dustCount * 3);
@@ -117,18 +121,18 @@ export const GlobalBackground3D: React.FC = () => {
     // Circular soft particle sprite texture with high-definition glow
     const createCircleTexture = () => {
       const canvasEl = document.createElement("canvas");
-      canvasEl.width = 128;
-      canvasEl.height = 128;
+      canvasEl.width = 64;
+      canvasEl.height = 64;
       const ctx = canvasEl.getContext("2d");
       if (ctx) {
-        const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
         gradient.addColorStop(0.2, "rgba(255, 255, 255, 0.9)");
         gradient.addColorStop(0.55, "rgba(255, 255, 255, 0.35)");
         gradient.addColorStop(0.85, "rgba(255, 255, 255, 0.08)");
         gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 128, 128);
+        ctx.fillRect(0, 0, 64, 64);
       }
       return new THREE.CanvasTexture(canvasEl);
     };
@@ -148,7 +152,7 @@ export const GlobalBackground3D: React.FC = () => {
     scene.add(dustPoints);
 
     // Outer Celestial Dust Ring for Cinematic Parallax Depth
-    const outerDustCount = 200;
+    const outerDustCount = stateRef.current.isEcoMode ? 30 : 70;
     const outerDustGeo = new THREE.BufferGeometry();
     const outerDustPositions = new Float32Array(outerDustCount * 3);
     for (let i = 0; i < outerDustCount; i++) {
@@ -171,6 +175,7 @@ export const GlobalBackground3D: React.FC = () => {
     });
     const outerDustPoints = new THREE.Points(outerDustGeo, outerDustMat);
     scene.add(outerDustPoints);
+
 
     // ==========================================
     // B. MATRIX CORE PARTICLES
@@ -301,14 +306,23 @@ export const GlobalBackground3D: React.FC = () => {
     let prevPath = stateRef.current.pathname;
     let transitionImpulse = 0;
 
+    let isVisible = true;
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     // Render Animation Loop
     const animate = () => {
       animId = requestAnimationFrame(animate);
 
+      // Pause rendering completely when tab is hidden to save 100% CPU/battery
+      if (!isVisible) return;
+
       const delta = Math.min(clock.getDelta(), 0.1);
       const time = clock.getElapsedTime();
 
-      const { pathname: currentPath, isCharging: currCharge, holdProgress: currHold, isBursting: currBurst } = stateRef.current;
+      const { pathname: currentPath, isCharging: currCharge, holdProgress: currHold, isBursting: currBurst, isEcoMode: currEco } = stateRef.current;
 
       // Detect route change and trigger buttery cinematic hyperspace glide
       if (currentPath !== prevPath) {
@@ -422,6 +436,13 @@ export const GlobalBackground3D: React.FC = () => {
       pointLight1.position.set(mouse.x * 2.2, mouse.y * 1.8, 3.2);
       pointLight2.color.lerpColors(activeColorB, activeColorA, colorMix);
 
+      // In Eco Mode, bypass intensive per-particle trigonometric loop entirely
+      if (currEco) {
+        dustPoints.rotation.y = time * 0.02;
+        renderer.render(scene, camera);
+        return;
+      }
+
       // Cosmic Dust (Hyperdrive streak effect on transition)
       const dPos = dustGeo.attributes.position.array as Float32Array;
       const dCol = dustGeo.attributes.color.array as Float32Array;
@@ -508,6 +529,7 @@ export const GlobalBackground3D: React.FC = () => {
 
     return () => {
       cancelAnimationFrame(animId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
       renderer.dispose();

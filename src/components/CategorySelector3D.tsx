@@ -53,6 +53,12 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
   const { playHoverSound, playSelectSound } = useSound();
 
   const mouseRef = useRef({ x: 0, y: 0 });
+  const isHoveredRef = useRef(false);
+  const isActiveRef = useRef(isActive);
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -73,7 +79,7 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
@@ -149,10 +155,32 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     };
 
     window.addEventListener("resize", onResize);
+
+    // Visibility & Intersection Observer to pause rendering when offscreen
+    let isIntersecting = true;
+    let isTabVisible = !document.hidden;
+
+    const handleVisibility = () => {
+      isTabVisible = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]) {
+            isIntersecting = entries[0].isIntersecting;
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    }
 
     // Render loop
     const clock = new THREE.Clock();
@@ -160,9 +188,15 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
 
-      const speed = isHovered || isActive ? 1.15 : 0.45;
+      // Skip render if off-screen or tab is hidden (Zero GPU/CPU load)
+      if (!isIntersecting || !isTabVisible) return;
+
+      const delta = clock.getDelta();
+      const hov = isHoveredRef.current;
+      const act = isActiveRef.current;
+
+      const speed = hov || act ? 1.15 : 0.45;
       mainGroup.rotation.y += delta * speed;
       mainGroup.rotation.x += delta * (speed * 0.4);
 
@@ -178,10 +212,10 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
       mainGroup.rotation.z = THREE.MathUtils.lerp(mainGroup.rotation.z, -targetTiltY * 0.5, 0.06);
 
       // Lerp opacity & scale on hover
-      const targetOpacity = isHovered || isActive ? 1.0 : 0.75;
+      const targetOpacity = hov || act ? 1.0 : 0.75;
       wireMat.opacity = THREE.MathUtils.lerp(wireMat.opacity, targetOpacity, 0.1);
 
-      const targetScale = isHovered || isActive ? 1.08 : 1.0;
+      const targetScale = hov || act ? 1.08 : 1.0;
       mainGroup.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.08);
 
       renderer.render(scene, camera);
@@ -191,6 +225,8 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
 
     return () => {
       if (animId) cancelAnimationFrame(animId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      observer?.disconnect();
       container.removeEventListener("mousemove", onMouseMove);
       container.removeEventListener("touchmove", onTouchMove);
       container.removeEventListener("mouseleave", onMouseLeave);
@@ -203,7 +239,8 @@ const GeometryCard: React.FC<GeometryCardProps> = ({
       if (innerWireGeo) innerWireGeo.dispose();
       if (innerWireMat) innerWireMat.dispose();
     };
-  }, [geometryType, colorHex, isHovered, isActive]);
+  }, [geometryType, colorHex]);
+
 
   const handleCardClick = () => {
     playSelectSound();

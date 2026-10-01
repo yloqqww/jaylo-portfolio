@@ -387,7 +387,7 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
 
                   {/* Surface Content (Video / Image) */}
                   <div className="relative flex-1 w-full bg-black overflow-hidden group/media">
-                    {item.videoUrl ? (
+                    {item.videoUrl && isActive ? (
                       <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
                         <video
                           src={item.videoUrl}
@@ -395,6 +395,7 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                           loop
                           muted={isVideoMuted}
                           playsInline
+                          preload="metadata"
                           className="w-full h-full object-cover object-top"
                         />
                         {/* Video Live Badge */}
@@ -404,20 +405,18 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                         </div>
 
                         {/* Audio Toggle (Only on active card) */}
-                        {isActive && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              playHoverSound();
-                              setIsVideoMuted(!isVideoMuted);
-                            }}
-                            className="absolute bottom-4 right-4 z-20 px-3.5 py-2 rounded-full bg-black/85 hover:bg-white text-white hover:text-black border border-white/20 transition-all font-mono text-[10px] sm:text-[11px] flex items-center gap-2 cursor-pointer backdrop-blur-md shadow-xl"
-                          >
-                            {isVideoMuted ? <VolumeX className="w-3.5 h-3.5 text-coreCyan" /> : <Volume2 className="w-3.5 h-3.5 text-coreCyan" />}
-                            <span>{isVideoMuted ? "UNMUTE AUDIO" : "MUTED"}</span>
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playHoverSound();
+                            setIsVideoMuted(!isVideoMuted);
+                          }}
+                          className="absolute bottom-4 right-4 z-20 px-3.5 py-2 rounded-full bg-black/85 hover:bg-white text-white hover:text-black border border-white/20 transition-all font-mono text-[10px] sm:text-[11px] flex items-center gap-2 cursor-pointer backdrop-blur-md shadow-xl"
+                        >
+                          {isVideoMuted ? <VolumeX className="w-3.5 h-3.5 text-coreCyan" /> : <Volume2 className="w-3.5 h-3.5 text-coreCyan" />}
+                          <span>{isVideoMuted ? "UNMUTE AUDIO" : "MUTED"}</span>
+                        </button>
                       </div>
                     ) : (
                       <div className="relative w-full h-full overflow-hidden">
@@ -425,15 +424,17 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
                           src={item.imageSrc}
                           alt={item.title}
                           fill
-                          className="object-cover object-top group-hover/media:object-bottom transition-all duration-[4500ms] ease-in-out opacity-90 group-hover/media:opacity-100"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1080px"
+                          className="object-cover object-top group-hover/media:object-bottom transition-all duration-[4500ms] ease-in-out opacity-90 group-hover:opacity-100"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover/media:opacity-100 transition-opacity flex items-end p-5">
                           <span className="font-mono text-[11px] text-white bg-black/90 px-4 py-1.5 rounded-full border border-white/20 shadow-xl">
-                            {item.driveId ? "CLICK TO PLAY FULLSCREEN VIDEO DEMO" : "HOVER TO AUTO-SCROLL FULL SYSTEM"}
+                            {item.driveId || item.videoUrl ? "CLICK TO PLAY FULLSCREEN VIDEO DEMO" : "HOVER TO AUTO-SCROLL FULL SYSTEM"}
                           </span>
                         </div>
                       </div>
                     )}
+
 
                     {/* Gradient Overlay for bottom text */}
                     <div className="absolute inset-x-0 bottom-0 h-64 sm:h-48 bg-gradient-to-t from-black/95 via-black/70 to-transparent pointer-events-none" />
@@ -600,42 +601,26 @@ export const PersonalProjectsRolodex = <T extends ProjectItem>({
 
               {/* Media Preview */}
               <div className="relative w-full aspect-[16/10] bg-[#0c0d14] overflow-hidden group/media">
-                {project.videoUrl ? (
-                  <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
-                    <video
-                      src={project.videoUrl}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover object-top"
-                    />
+                <div className="relative w-full h-full overflow-hidden">
+                  <Image
+                    src={project.imageSrc}
+                    alt={project.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover object-top group-hover/media:object-bottom transition-all duration-[4000ms] ease-in-out opacity-90 group-hover:opacity-100"
+                  />
+                  {(project.videoUrl || project.driveId) && (
                     <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-coreCyan/40 text-coreCyan font-mono text-[9px] tracking-wider pointer-events-none">
-                      <span className="w-1.5 h-1.5 rounded-full bg-coreCyan animate-ping" />
-                      <span>LIVE WALKTHROUGH DEMO</span>
+                      <Play className="w-2.5 h-2.5 text-coreCyan fill-coreCyan" />
+                      <span>{project.driveId ? "HD SCREEN RECORD READY" : "VIDEO WALKTHROUGH READY"}</span>
                     </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                    <span className="font-mono text-[10px] text-white bg-black/85 px-3.5 py-1 rounded-full border border-white/20 shadow-lg">
+                      {project.driveId || project.videoUrl ? "CLICK TO LAUNCH THEATER VIDEO DEMO" : "HOVER TO AUTO-SCROLL FULL SYSTEM"}
+                    </span>
                   </div>
-                ) : (
-                  <div className="relative w-full h-full overflow-hidden">
-                    <Image
-                      src={project.imageSrc}
-                      alt={project.title}
-                      fill
-                      className="object-cover object-top group-hover/media:object-bottom transition-all duration-[4000ms] ease-in-out opacity-90 group-hover:opacity-100"
-                    />
-                    {project.driveId && (
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-coreCyan/40 text-coreCyan font-mono text-[9px] tracking-wider pointer-events-none">
-                        <Play className="w-2.5 h-2.5 text-coreCyan fill-coreCyan" />
-                        <span>HD SCREEN RECORD READY</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                      <span className="font-mono text-[10px] text-white bg-black/85 px-3.5 py-1 rounded-full border border-white/20 shadow-lg">
-                        {project.driveId ? "CLICK TO LAUNCH THEATER VIDEO DEMO" : "HOVER TO AUTO-SCROLL FULL SYSTEM"}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 <div className="absolute bottom-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-coreCyan/20 group-hover:bg-coreCyan text-coreCyan group-hover:text-black flex items-center justify-center backdrop-blur-md transition-all duration-300">
                   <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

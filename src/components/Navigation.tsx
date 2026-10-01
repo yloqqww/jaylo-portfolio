@@ -4,14 +4,16 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 import { SoundToggle, useSound } from "./SoundController";
+import { useBackground } from "./BackgroundContext";
 import { HireModal } from "./HireModal";
 
 export const Navigation: React.FC<{ isLoaded?: boolean }> = ({ isLoaded = true }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { playHoverSound, playSelectSound } = useSound();
+  const { isEcoMode, toggleEcoMode } = useBackground();
   
   const [mounted, setMounted] = useState(false);
   const [isHireOpen, setIsHireOpen] = useState(false);
@@ -178,8 +180,31 @@ export const Navigation: React.FC<{ isLoaded?: boolean }> = ({ isLoaded = true }
             </nav>
           )}
 
-          {/* Right Controls: Equalizer Sound Bars + Mobile Hamburger */}
-          <div className="flex items-center gap-2.5 sm:gap-4">
+          {/* Right Controls: Equalizer Sound Bars + Performance Toggle + Mobile Hamburger */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            {/* Eco / 60FPS Performance Mode Toggle for Hiring Managers & Low-Spec Laptops */}
+            <button
+              type="button"
+              onClick={() => {
+                playSelectSound();
+                toggleEcoMode();
+              }}
+              onMouseEnter={() => playHoverSound()}
+              title={
+                isEcoMode
+                  ? "Eco Mode: Active (Low CPU/GPU). Click to enable Full 3D Particle Matrix."
+                  : "Turbo Mode: Active (Full 3D). Click to switch to Eco Mode (Smooth 60FPS on low-end laptops)."
+              }
+              className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-mono tracking-widest uppercase transition-all cursor-pointer select-none ${
+                isEcoMode
+                  ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.25)]"
+                  : "bg-white/[0.04] border-white/15 text-white/70 hover:text-coreCyan hover:border-coreCyan/50"
+              }`}
+            >
+              <Zap className={`w-3 h-3 ${isEcoMode ? "text-emerald-400" : "text-coreCyan"}`} />
+              <span>{isEcoMode ? "ECO 60FPS" : "TURBO 3D"}</span>
+            </button>
+
             {/* Audio Equalizer Bars */}
             <SoundToggle />
 
@@ -348,11 +373,31 @@ export const Navigation: React.FC<{ isLoaded?: boolean }> = ({ isLoaded = true }
           </nav>
 
           {/* Drawer Footer Controls */}
-          <div className="pt-5 border-t border-white/10 flex items-center justify-between text-xs font-mono text-muted shrink-0">
-            <span className="text-[10px] tracking-widest uppercase text-white/50">SYSTEM AUDIO</span>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] tracking-widest uppercase text-white/60">SFX:</span>
-              <SoundToggle />
+          <div className="pt-5 border-t border-white/10 flex flex-col gap-3 text-xs font-mono text-muted shrink-0">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] tracking-widest uppercase text-white/50">GRAPHICS MODE:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  playSelectSound();
+                  toggleEcoMode();
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-mono tracking-widest uppercase transition-all cursor-pointer ${
+                  isEcoMode
+                    ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.25)]"
+                    : "bg-white/[0.06] border-white/20 text-white/80"
+                }`}
+              >
+                <Zap className={`w-3 h-3 ${isEcoMode ? "text-emerald-400" : "text-coreCyan"}`} />
+                <span>{isEcoMode ? "ECO 60FPS (ACTIVE)" : "TURBO 3D (ACTIVE)"}</span>
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] tracking-widest uppercase text-white/50">SYSTEM AUDIO:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] tracking-widest uppercase text-white/60">SFX:</span>
+                <SoundToggle />
+              </div>
             </div>
           </div>
         </div>,

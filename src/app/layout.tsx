@@ -35,6 +35,7 @@ import { GlobalBackground3D } from "@/components/GlobalBackground3D";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { PageTransition } from "@/components/PageTransition";
 import { BackToTop } from "@/components/BackToTop";
+import { VisitorTracker } from "@/components/VisitorTracker";
 
 export default function RootLayout({
   children,
@@ -54,6 +55,8 @@ export default function RootLayout({
         <SoundProvider>
           <BackgroundProvider>
             <SmoothScroll>
+              {/* Real-time Visitor Telemetry (Discord notification) */}
+              <VisitorTracker />
               {/* Global Persistent 3D WebGL Background (Never unmounts across routes) */}
               <GlobalBackground3D />
               <PageTransition>

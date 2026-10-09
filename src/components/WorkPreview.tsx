@@ -70,13 +70,13 @@ export const WorkPreview: React.FC<WorkPreviewProps> = ({
                   LeadFlow AI CRM
                 </h3>
                 <p className="text-xs text-muted leading-relaxed font-sans">
-                  AI-powered CRM for sales teams with automated email writer, lead scoring, and team pipelines.
+                  AI CRM and sales automation with transcript-to-task workflows, follow-up cadences, pipeline tracking, and revenue insights.
                 </p>
                 <div className="font-mono text-[10px] text-muted/80 flex flex-wrap gap-2 pt-2">
                   <span>Next.js</span> • <span>TypeScript</span> • <span>OpenAI</span> • <span>Stripe</span>
                 </div>
                 <a
-                  href="https://leadflow-crm-sand.vercel.app/"
+                  href="https://leadflow-crm-orpin-three.vercel.app/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-mono text-coreCyan hover:underline pt-2"
